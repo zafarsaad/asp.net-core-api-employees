@@ -26,11 +26,18 @@ var employeeRoute = app.MapGroup("/employees");
 
 employeeRoute.MapGet(string.Empty, () =>
 {
-    foreach (var employee in employees)
+    return Results.Ok(employees.Select(employee => new GetEmployeeResponse
     {
-        employee.SocialSecurityNumber = null; // We don't want to return the SSN
-    }
-    return employees;
+        FirstName = employee.FirstName,
+        LastName = employee.LastName,
+        Address1 = employee.Address1,
+        Address2 = employee.Address2,
+        City = employee.City,
+        State = employee.State,
+        ZipCode = employee.ZipCode,
+        PhoneNumber = employee.PhoneNumber,
+        Email = employee.Email
+    }));
 });
 
 employeeRoute.MapGet("{id:int}", (int id) =>
@@ -40,11 +47,42 @@ employeeRoute.MapGet("{id:int}", (int id) =>
     {
         return Results.NotFound();
     }
-    employee.SocialSecurityNumber = null; // We don't want to return the SSN
-    return Results.Ok(employee);
+
+    return Results.Ok(new GetEmployeeResponse
+    {
+        FirstName = employee.FirstName,
+        LastName = employee.LastName,
+        Address1 = employee.Address1,
+        Address2 = employee.Address2,
+        City = employee.City,
+        State = employee.State,
+        ZipCode = employee.ZipCode,
+        PhoneNumber = employee.PhoneNumber,
+        Email = employee.Email
+    });
 });
 
-employeeRoute.MapPut("{id}", ([FromBody] Employee employee, int id) =>
+employeeRoute.MapPost(string.Empty, ([FromBody] CreateEmployeeRequest employee) =>
+{
+    var newEmployee = new Employee
+    {
+        Id = employees.Max(e => e.Id) + 1,
+        FirstName = employee.FirstName,
+        LastName = employee.LastName,
+        SocialSecurityNumber = employee.SocialSecurityNumber,
+        Address1 = employee.Address1,
+        Address2 = employee.Address2,
+        City = employee.City,
+        State = employee.State,
+        ZipCode = employee.ZipCode,
+        PhoneNumber = employee.PhoneNumber,
+        Email = employee.Email
+    };
+    employees.Add(newEmployee);
+    return Results.Created($"/employees/{newEmployee.Id}", employee);
+});
+
+employeeRoute.MapPut("{id}", (UpdateEmployeeRequest employee, int id) =>
 {
     var existingEmployee = employees.SingleOrDefault(e => e.Id == id);
     if (existingEmployee == null)
@@ -52,8 +90,6 @@ employeeRoute.MapPut("{id}", ([FromBody] Employee employee, int id) =>
         return Results.NotFound();
     }
 
-    // existingEmployee.FirstName = employee.FirstName;
-    // existingEmployee.LastName = employee.LastName;
     existingEmployee.Address1 = employee.Address1;
     existingEmployee.Address2 = employee.Address2;
     existingEmployee.City = employee.City;
@@ -63,13 +99,6 @@ employeeRoute.MapPut("{id}", ([FromBody] Employee employee, int id) =>
     existingEmployee.Email = employee.Email;
 
     return Results.Ok(existingEmployee);
-});
-
-employeeRoute.MapPost(string.Empty, (Employee employee) =>
-{
-    employee.Id = employees.Max(e => e.Id) + 1; // We're not using a database, so we need to manually assign an ID
-    employees.Add(employee);
-    return Results.Created($"/employees/{employee.Id}", employee);
 });
 
 app.UseHttpsRedirection();
