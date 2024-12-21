@@ -63,11 +63,15 @@ public class EmployeesController : BaseController
     [HttpPost]
     public async Task<IActionResult> CreateEmployee([FromBody] CreateEmployeeRequest employeeRequest)
     {
-        var validationResults = await ValidateAsync(employeeRequest);
-        if (!validationResults.IsValid)
-        {
-            return ValidationProblem(validationResults.ToModelStateDictionary());
-        }
+
+        // hotfix to use await; could refactor synchronous; bypassing validation using our custom FluentFilter here working
+        await Task.CompletedTask;
+
+        // var validationResults = await ValidateAsync(employeeRequest);
+        // if (!validationResults.IsValid)
+        // {
+        //     return ValidationProblem(validationResults.ToModelStateDictionary());
+        // }
 
         var newEmployee = new Employee
         {
