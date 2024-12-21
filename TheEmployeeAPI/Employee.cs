@@ -1,4 +1,4 @@
-public class Employee
+public class Employee 
 {
     public int Id { get; set; }
     public required string FirstName { get; set; }
@@ -12,6 +12,7 @@ public class Employee
     public string? ZipCode { get; set; }
     public string? PhoneNumber { get; set; }
     public string? Email { get; set; }
+
     public List<EmployeeBenefits> Benefits { get; set; } = new List<EmployeeBenefits>();
 }
 
@@ -21,6 +22,8 @@ public class EmployeeBenefits
     public int EmployeeId { get; set; }
     public BenefitType BenefitType { get; set; }
     public decimal Cost { get; set; }
+
+    public Employee Employee { get; set; } = null!;
 }
 
 public enum BenefitType

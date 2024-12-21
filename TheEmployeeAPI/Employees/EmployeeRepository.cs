@@ -1,4 +1,4 @@
-using TheEmployeeAPI;
+using TheEmployeeAPI.Abstractions;
 
 public class EmployeeRepository : IRepository<Employee>
 {
@@ -20,7 +20,6 @@ public class EmployeeRepository : IRepository<Employee>
         {
             throw new ArgumentNullException(nameof(entity));
         }
-        //we snuck this in because we're no longer providing default employees!
         entity.Id = _employees.Select(e => e.Id).DefaultIfEmpty(0).Max() + 1;
         _employees.Add(entity);
     }

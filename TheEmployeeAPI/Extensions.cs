@@ -1,12 +1,9 @@
-using System;
 using FluentValidation.Results;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-
-namespace TheEmployeeAPI;
 
 public static class Extensions
 {
-
     public static ModelStateDictionary ToModelStateDictionary(this ValidationResult validationResult)
     {
         var modelState = new ModelStateDictionary();
@@ -18,5 +15,4 @@ public static class Extensions
 
         return modelState;
     }
-
 }

@@ -1,4 +1,5 @@
 .DS_Store
+.vscode
 TheEmployeeAPI/obj
 TheEmployeeAPI/bin
 TheEmployeeAPI.Tests/obj

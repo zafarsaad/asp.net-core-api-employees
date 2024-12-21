@@ -1,25 +1,22 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
-using TheEmployeeAPI;
+using TheEmployeeAPI.Abstractions;
 
 public class EmployeesController : BaseController
 {
     private readonly IRepository<Employee> _repository;
     private readonly ILogger<EmployeesController> _logger;
 
-    public EmployeesController(
-        IRepository<Employee> repository,
-        ILogger<EmployeesController> logger)
+    public EmployeesController(IRepository<Employee> repository, ILogger<EmployeesController> logger)
     {
         _repository = repository;
-        this._logger = logger;
+        _logger = logger;
     }
 
     /// <summary>
-    /// Gets all of the employees in the system.
+    /// Get all employees.
     /// </summary>
-    /// <returns>Returns the employees in a JSON array.</returns>
-
+    /// <returns>An array of all employees.</returns>
     [HttpGet]
     [ProducesResponseType(typeof(IEnumerable<GetEmployeeResponse>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -35,7 +32,6 @@ public class EmployeesController : BaseController
     /// </summary>
     /// <param name="id">The ID of the employee.</param>
     /// <returns>The single employee record.</returns>
-
     [HttpGet("{id:int}")]
     [ProducesResponseType(typeof(GetEmployeeResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -49,7 +45,6 @@ public class EmployeesController : BaseController
         }
 
         var employeeResponse = EmployeeToGetEmployeeResponse(employee);
-
         return Ok(employeeResponse);
     }
 
@@ -58,23 +53,13 @@ public class EmployeesController : BaseController
     /// </summary>
     /// <param name="employeeRequest">The employee to be created.</param>
     /// <returns>A link to the employee that was created.</returns>
-
     [HttpPost]
     [ProducesResponseType(typeof(GetEmployeeResponse), StatusCodes.Status201Created)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ValidationProblemDetails))]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> CreateEmployee([FromBody] CreateEmployeeRequest employeeRequest)
     {
-
-        // hotfix to use await; could refactor synchronous; bypassing validation using our custom FluentFilter here working
-        await Task.CompletedTask;
-
-        // var validationResults = await ValidateAsync(employeeRequest);
-        // if (!validationResults.IsValid)
-        // {
-        //     return ValidationProblem(validationResults.ToModelStateDictionary());
-        // }
-
+        await Task.CompletedTask;   //just avoided a compiler error for now
         var newEmployee = new Employee
         {
             FirstName = employeeRequest.FirstName!,
@@ -99,11 +84,9 @@ public class EmployeesController : BaseController
     /// <param name="id">The ID of the employee to update.</param>
     /// <param name="employeeRequest">The employee data to update.</param>
     /// <returns></returns>
-
     [HttpPut("{id}")]
     [ProducesResponseType(typeof(GetEmployeeResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ValidationProblemDetails))]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public IActionResult UpdateEmployee(int id, [FromBody] UpdateEmployeeRequest employeeRequest)
     {
@@ -154,11 +137,10 @@ public class EmployeesController : BaseController
         {
             return NotFound();
         }
-        // return Ok(employee.Benefits.Select(b => BenefitToBenefitResponse(b))); // Lambda Expression can be removed
         return Ok(employee.Benefits.Select(BenefitToBenefitResponse));
     }
 
-    private GetEmployeeResponse EmployeeToGetEmployeeResponse(Employee employee)
+    private static GetEmployeeResponse EmployeeToGetEmployeeResponse(Employee employee)
     {
         return new GetEmployeeResponse
         {
@@ -171,13 +153,7 @@ public class EmployeesController : BaseController
             ZipCode = employee.ZipCode,
             PhoneNumber = employee.PhoneNumber,
             Email = employee.Email,
-            Benefits = employee.Benefits.Select(benefit => new GetEmployeeResponseEmployeeBenefit
-            {
-                Id = benefit.Id,
-                EmployeeId = benefit.EmployeeId,
-                BenefitType = benefit.BenefitType,
-                Cost = benefit.Cost
-            }).ToList()
+            Benefits = employee.Benefits.Select(BenefitToBenefitResponse).ToList()
         };
     }
 

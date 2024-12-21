@@ -1,6 +1,4 @@
-using System;
-
-namespace TheEmployeeAPI;
+namespace TheEmployeeAPI.Abstractions;
 
 public interface IRepository<T>
 {

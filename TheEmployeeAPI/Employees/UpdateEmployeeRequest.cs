@@ -1,5 +1,6 @@
 using FluentValidation;
-using TheEmployeeAPI;
+using Microsoft.AspNetCore.Mvc.Filters;
+using TheEmployeeAPI.Abstractions;
 
 public class UpdateEmployeeRequest
 {
@@ -22,8 +23,7 @@ public class UpdateEmployeeRequestValidator : AbstractValidator<UpdateEmployeeRe
         this._httpContext = httpContextAccessor.HttpContext!;
         this._repository = repository;
 
-        RuleFor(x => x.Address1).MustAsync(NotBeEmptyIfItIsSetOnEmployeeAlreadyAsync)
-        .WithMessage("Address1 must not be empty if already set.");
+        RuleFor(x => x.Address1).MustAsync(NotBeEmptyIfItIsSetOnEmployeeAlreadyAsync).WithMessage("Address1 must not be empty.");
     }
 
     private async Task<bool> NotBeEmptyIfItIsSetOnEmployeeAlreadyAsync(string? address, CancellationToken token)
