@@ -3,6 +3,23 @@ using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using TheEmployeeAPI;
 
+var employees = new List<Employee>
+{
+    new Employee { Id = 1, FirstName = "John", LastName = "Doe",
+            Benefits = new List<EmployeeBenefits>
+        {
+            new EmployeeBenefits { BenefitType = BenefitType.Health, Cost = 100 },
+            new EmployeeBenefits { BenefitType = BenefitType.Dental, Cost = 50 }
+        } },
+    new Employee { Id = 2, FirstName = "Jane", LastName = "Doe" }
+};
+
+var employeeRespository = new EmployeeRepository();
+foreach (var e in employees)
+{
+    employeeRespository.Create(e);
+}
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,7 +30,8 @@ builder.Services.AddSwaggerGen(options =>
 {
     options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, "TheEmployeeAPI.xml"));
 });
-builder.Services.AddSingleton<IRepository<Employee>, EmployeeRepository>();
+// builder.Services.AddSingleton<IRepository<Employee>, EmployeeRepository>(); // previously we had factory instantiate type
+builder.Services.AddSingleton<IRepository<Employee>>(employeeRespository);
 builder.Services.AddProblemDetails();
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 builder.Services.AddControllers(options =>
