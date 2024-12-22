@@ -1,4 +1,4 @@
-public class Employee 
+public class Employee : AuditableEntity
 {
     public int Id { get; set; }
     public required string FirstName { get; set; }
@@ -32,4 +32,13 @@ public class EmployeeBenefit
     public int BenefitId { get; set; }
     public Benefit Benefit { get; set; } = null!;
     public decimal? CostToEmployee { get; set; }
+}
+
+
+public abstract class AuditableEntity
+{
+    public string? CreatedBy { get; set; }
+    public DateTime? CreatedOn { get; set; }
+    public string? LastModifiedBy { get; set; }
+    public DateTime? LastModifiedOn { get; set; }
 }

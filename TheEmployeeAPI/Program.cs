@@ -1,16 +1,16 @@
-using System.Collections;
-using System.Collections.Immutable;
-using System.Globalization;
+using System.Text;
 using FluentValidation;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Internal;
+using Microsoft.IdentityModel.Tokens;
+using Testcontainers.PostgreSql;
 
-var employees = new List<Employee>
-{
-    new Employee { Id = 1, FirstName = "John", LastName = "Doe" },
-    new Employee { Id = 2, FirstName = "Jane", LastName = "Doe" }
-};
+var postgreSqlContainer = new PostgreSqlBuilder().Build();
+await postgreSqlContainer.StartAsync();
 
 var builder = WebApplication.CreateBuilder(args);
+var configuration = builder.Configuration;
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -26,14 +26,36 @@ builder.Services.AddControllers(options =>
 {
     options.Filters.Add<FluentValidationFilter>();
 });
+builder.Services.AddSingleton<ISystemClock, SystemClock>();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
-    {
-        options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"));
-        options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
-    });
+{
+    var conn = postgreSqlContainer.GetConnectionString();
+    options.UseNpgsql(conn);
+    options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
+});
+
+builder.Services
+    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(
+        options =>
+        {
+            var tokenValidationParameters = new TokenValidationParameters
+            {
+                ValidIssuer = configuration["Tokens:Issuer"],
+                ValidAudience = configuration["Tokens:Issuer"],
+                IssuerSigningKey =
+                    new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Tokens:Key"]!))
+            };
+
+            options.TokenValidationParameters = tokenValidationParameters;
+        });
+
 
 var app = builder.Build();
+
+//kill container on shutdown
+app.Lifetime.ApplicationStopping.Register(() => postgreSqlContainer.DisposeAsync());
 
 using (var scope = app.Services.CreateScope())
 {

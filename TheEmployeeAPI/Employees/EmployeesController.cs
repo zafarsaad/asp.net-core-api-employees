@@ -1,8 +1,9 @@
-using System.Linq.Expressions;
 using FluentValidation;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
+[Authorize]
 public class EmployeesController : BaseController
 {
     private readonly AppDbContext _dbContext;
