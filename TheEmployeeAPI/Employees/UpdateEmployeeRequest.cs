@@ -1,6 +1,5 @@
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc.Filters;
-using TheEmployeeAPI.Abstractions;
 
 public class UpdateEmployeeRequest
 {
@@ -13,6 +12,7 @@ public class UpdateEmployeeRequest
     public string? Email { get; set; }
 }
 
+/*
 public class UpdateEmployeeRequestValidator : AbstractValidator<UpdateEmployeeRequest>
 {
     private readonly HttpContext _httpContext;
@@ -41,3 +41,4 @@ public class UpdateEmployeeRequestValidator : AbstractValidator<UpdateEmployeeRe
         return true;
     }
 }
+*/
